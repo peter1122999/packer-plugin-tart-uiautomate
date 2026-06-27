@@ -34,6 +34,7 @@ type OCRItem struct {
 
 type Detection struct {
 	Screen   Screen    `json:"screen" mapstructure:"screen"`
+	Scene    string    `json:"scene" mapstructure:"scene"`
 	Controls []Control `json:"controls" mapstructure:"controls"`
 	OCR      []OCRItem `json:"ocr" mapstructure:"ocr"`
 }

@@ -170,7 +170,11 @@ func (r *Runner) execAction(ctx context.Context, a Action, scenes map[string]Sce
 	case "wait":
 		if a.TimeoutSeconds > 0 {
 			r.log.Say(fmt.Sprintf("uiauto: waiting %d seconds", a.TimeoutSeconds))
-			time.Sleep(time.Duration(a.TimeoutSeconds) * time.Second)
+			select {
+			case <-time.After(time.Duration(a.TimeoutSeconds) * time.Second):
+			case <-ctx.Done():
+				err = ctx.Err()
+			}
 		}
 	case "screenshot":
 		r.log.Say(fmt.Sprintf("uiauto: screenshot %s", a.Name))
@@ -213,6 +217,17 @@ func (r *Runner) execAction(ctx context.Context, a Action, scenes map[string]Sce
 		if _, ok := selectControl(d, a.Role, a.Label, a.Value, a.Region, a.Match, a.Selected); !ok {
 			err = fmt.Errorf("assertion failed for control: role=%q label=%q", a.Role, a.Label)
 		}
+	case "wait_for_scene":
+		err = r.waitForScene(ctx, a)
+	case "assert_scene":
+		var d *Detection
+		d, err = r.detection(ctx, fmt.Sprintf("%04d-detect.png", r.step))
+		if err != nil {
+			break
+		}
+		if !selectScene(d, a.Scene) {
+			err = fmt.Errorf("assert_scene failed: want=%q got=%q", a.Scene, d.Scene)
+		}
 	case "run_scene":
 		s, ok := scenes[a.Scene]
 		if !ok {
@@ -235,6 +250,55 @@ func (r *Runner) execAction(ctx context.Context, a Action, scenes map[string]Sce
 	}
 	r.writeEvent("action_done", map[string]interface{}{"type": a.Type})
 	return nil
+}
+
+// waitForScene polls the detector until the reported scene matches a.Scene,
+// or a.TimeoutSeconds elapses. Default timeout is 60s, poll interval is 1.5s.
+func (r *Runner) waitForScene(ctx context.Context, a Action) error {
+	timeout := time.Duration(a.TimeoutSeconds) * time.Second
+	if timeout == 0 {
+		timeout = 60 * time.Second
+	}
+	poll := 1500 * time.Millisecond
+
+	deadline := time.Now().Add(timeout)
+	attempt := 0
+	lastScene := ""
+
+	r.log.Say(fmt.Sprintf("uiauto: waiting for scene %q (timeout %s)", a.Scene, timeout))
+
+	for {
+		attempt++
+		d, derr := r.detection(ctx, fmt.Sprintf("%04d-wait-%s-%03d.png",
+			r.step, sanitize(a.Scene), attempt))
+
+		if derr == nil {
+			lastScene = d.Scene
+			if selectScene(d, a.Scene) {
+				r.writeEvent("wait_for_scene_match", map[string]interface{}{
+					"scene":   a.Scene,
+					"attempt": attempt,
+				})
+				return nil
+			}
+		} else {
+			r.writeEvent("wait_for_scene_detect_error", map[string]interface{}{
+				"attempt": attempt,
+				"error":   derr.Error(),
+			})
+		}
+
+		if time.Now().After(deadline) {
+			return fmt.Errorf("wait_for_scene timed out: want=%q last=%q attempts=%d",
+				a.Scene, lastScene, attempt)
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(poll):
+		}
+	}
 }
 
 func (r *Runner) runScene(ctx context.Context, s Scene, scenes map[string]Scene) error {

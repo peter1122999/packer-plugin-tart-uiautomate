@@ -104,3 +104,25 @@ func selectControl(d *Detection, role, label, value, region, match string, selec
 	}
 	return hits[0], true
 }
+
+// selectScene returns true when the detector's reported scene matches `want`
+// (case-insensitive, whitespace-trimmed). Empty `want` matches any scene.
+func selectScene(d *Detection, want string) bool {
+	w := strings.TrimSpace(want)
+	if w == "" {
+		return true
+	}
+	return strings.EqualFold(strings.TrimSpace(d.Scene), w)
+}
+
+// sanitize replaces filesystem-unfriendly characters in scene names so they
+// can be used in artifact filenames.
+func sanitize(s string) string {
+	return strings.Map(func(r rune) rune {
+		switch r {
+		case ' ', '/', '\\', ':', '?', '*', '"', '<', '>', '|':
+			return '-'
+		}
+		return r
+	}, s)
+}
