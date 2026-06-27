@@ -225,7 +225,7 @@ func (d *customDriver) WaitForFramebufferUpdate() error {
 			// The built-in VNC server in Virtualization.framework will sometimes
 			// fail to deliver a framebuffer update, even though the VM view shows
 			// new content.
-			if (incremental) {
+			if incremental {
 				// As a first step, we try a full update, which according to
 				// RFC 6143 7.5.3 should result in the server sending the entire
 				// contents of the specified area as soon as possible.

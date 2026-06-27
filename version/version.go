@@ -1,14 +1,7 @@
 package version
 
-import (
-	"github.com/hashicorp/packer-plugin-sdk/version"
-)
+import packersdkversion "github.com/hashicorp/packer-plugin-sdk/version"
 
-var (
-	// Version is the main version number that is being run at the moment.
-	Version = "" // Will be set when building
+var GitVersion = "0.0.1"
 
-	// PluginVersion is used by the plugin set to allow Packer to recognize
-	// what version this plugin is.
-	PluginVersion = version.NewRawVersion(Version)
-)
+var PluginVersion = packersdkversion.NewRawVersion(GitVersion)

@@ -6,10 +6,10 @@ import (
 	"github.com/diskfs/go-diskfs/partition/gpt"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
+	"github.com/peter1122999/packer-plugin-tart-uiautomate/builder/tart/statekey"
 	"github.com/samber/lo"
 	"io"
 	"os"
-	"github.com/peter1122999/packer-plugin-tart-uiautomate/builder/tart/statekey"
 )
 
 func Relocate(diskImagePath string, ui packer.Ui, state multistep.StateBag) error {

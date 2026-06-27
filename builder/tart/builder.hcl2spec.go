@@ -201,5 +201,6 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"run_extra_args":               &hcldec.AttrSpec{Name: "run_extra_args", Type: cty.List(cty.String), Required: false},
 		"ip_extra_args":                &hcldec.AttrSpec{Name: "ip_extra_args", Type: cty.List(cty.String), Required: false},
 	}
+
 	return s
 }

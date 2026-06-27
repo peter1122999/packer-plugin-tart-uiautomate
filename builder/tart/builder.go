@@ -4,8 +4,10 @@ package tart
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
@@ -49,7 +51,7 @@ type Config struct {
 	RunExtraArgs      []string      `mapstructure:"run_extra_args"`
 	IpExtraArgs       []string      `mapstructure:"ip_extra_args"`
 
-	UIAutomation *uiauto.Config `mapstructure:"ui_automation"`
+	UIAutomation *uiauto.Config `mapstructure:"-"`
 
 	ctx interpolate.Context
 }
@@ -76,6 +78,14 @@ func (b *Builder) Prepare(raws ...interface{}) (generatedVars []string, warnings
 	}, raws...)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if uiAutomationJSON := os.Getenv("TART_UI_AUTOMATION_JSON"); uiAutomationJSON != "" {
+		var uiAutomation uiauto.Config
+		if err := json.Unmarshal([]byte(uiAutomationJSON), &uiAutomation); err != nil {
+			return nil, nil, fmt.Errorf("invalid TART_UI_AUTOMATION_JSON: %w", err)
+		}
+		b.config.UIAutomation = &uiAutomation
 	}
 
 	if b.config.UIAutomation != nil {

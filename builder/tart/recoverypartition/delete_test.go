@@ -1,8 +1,8 @@
 package recoverypartition_test
 
 import (
-	"os"
 	"github.com/peter1122999/packer-plugin-tart-uiautomate/builder/tart/recoverypartition"
+	"os"
 	"path/filepath"
 	"testing"
 

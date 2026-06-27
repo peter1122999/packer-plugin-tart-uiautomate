@@ -1,8 +1,8 @@
 package tart_test
 
 import (
-	"github.com/stretchr/testify/require"
 	"github.com/peter1122999/packer-plugin-tart-uiautomate/builder/tart"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 

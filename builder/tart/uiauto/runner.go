@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -166,7 +167,13 @@ func (r *Runner) execAction(ctx context.Context, a Action, scenes map[string]Sce
 		err = r.Scroll(ctx, a.DX, a.DY)
 	case "type":
 		err = r.TypeText(ctx, a.Text)
+	case "wait":
+		if a.TimeoutSeconds > 0 {
+			r.log.Say(fmt.Sprintf("uiauto: waiting %d seconds", a.TimeoutSeconds))
+			time.Sleep(time.Duration(a.TimeoutSeconds) * time.Second)
+		}
 	case "screenshot":
+		r.log.Say(fmt.Sprintf("uiauto: screenshot %s", a.Name))
 		if a.Name == "" {
 			a.Name = fmt.Sprintf("%04d-screenshot.png", r.step)
 		}
@@ -214,6 +221,7 @@ func (r *Runner) execAction(ctx context.Context, a Action, scenes map[string]Sce
 		}
 		err = r.runScene(ctx, s, scenes)
 	case "cgtool":
+		r.log.Say(fmt.Sprintf("uiauto: running cgtool %s", strings.Join(a.Args, " ")))
 		err = r.cg.Raw(ctx, a.Args)
 	default:
 		err = fmt.Errorf("unknown action type: %s", a.Type)

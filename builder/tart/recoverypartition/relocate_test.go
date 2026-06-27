@@ -3,9 +3,9 @@ package recoverypartition_test
 import (
 	"bufio"
 	"bytes"
+	"github.com/peter1122999/packer-plugin-tart-uiautomate/builder/tart/recoverypartition"
 	"io"
 	"os"
-	"github.com/peter1122999/packer-plugin-tart-uiautomate/builder/tart/recoverypartition"
 	"path/filepath"
 	"testing"
 
